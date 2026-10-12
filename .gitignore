@@ -5,8 +5,8 @@
 
 # ---- 资料文件（原始数据、中间数据，体积大且非本体）----
 temp/
-# 案例自带的数据副本（task.json / hooks / prepare_*.py 保留，数据本身不入库）
-cases/*/source/
+# 案例工作目录：每个案例的 task.json / hooks / 数据副本属本地工作区，不入库
+cases/
 # 数据文件类型兜底；若确需随 Skill 分发极小样例，可用 ! 规则显式放行
 *.xlsx
 *.xls
