@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "reusable-data-analysis/charts",
+  "title": "图表配置",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status", "charts", "issues", "next_node"],
+  "properties": {
+    "status": { "enum": ["ready", "blocked"] },
+    "charts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "dataset_id", "insight_id", "chart_type", "title", "subtitle", "encoding", "option", "accessibility_summary", "validation"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "dataset_id": { "type": "string", "minLength": 1 },
+          "insight_id": { "type": "string", "minLength": 1 },
+          "chart_type": {
+            "enum": ["line", "area", "vertical_bar", "horizontal_bar", "dual_axis", "pie"],
+            "description": "图表类型；须符合选型规范：时序→line/area，类别≤5→vertical_bar，类别≥6→horizontal_bar，量+率→dual_axis。"
+          },
+          "title": { "type": "string", "minLength": 1 },
+          "subtitle": { "type": "string" },
+          "encoding": { "type": "object" },
+          "option": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "图表样式声明，必须符合配色/坐标轴/标注/辅助线规范。",
+            "required": ["palette", "axis", "labels", "aux_lines"],
+            "properties": {
+              "palette": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "enum": ["#003366", "#0073CF", "#5AB4E0", "#E63329", "#F7941D", "#00A551"] }
+              },
+              "axis": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["min", "max", "from_zero"],
+                "properties": {
+                  "min": { "type": ["number", "null"] },
+                  "max": { "type": "number" },
+                  "from_zero": { "type": "boolean" },
+                  "note": { "type": "string", "description": "折线图压缩起点时填写「非零起点」。" },
+                  "right": {
+                    "type": ["object", "null"],
+                    "description": "双轴右轴范围；必须独立显式设置，禁止依赖自动缩放。",
+                    "additionalProperties": false,
+                    "required": ["min", "max", "from_zero"],
+                    "properties": {
+                      "min": { "type": ["number", "null"] },
+                      "max": { "type": "number" },
+                      "from_zero": { "type": "boolean" }
+                    }
+                  }
+                }
+              },
+              "labels": {
+                "type": "array",
+                "maxItems": 3,
+                "description": "最多标注最新值、峰值、对比基准 3 个关键点。",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["x", "value", "kind"],
+                  "properties": {
+                    "x": { "type": "string" },
+                    "value": { "type": "number" },
+                    "kind": { "enum": ["latest", "peak", "baseline"] }
+                  }
+                }
+              },
+              "aux_lines": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["kind", "color", "style", "label"],
+                  "properties": {
+                    "kind": { "enum": ["average", "target"] },
+                    "color": { "enum": ["#F7941D", "#E63329"] },
+                    "style": { "enum": ["dashed", "dotted"] },
+                    "value": { "type": "number" },
+                    "label": { "type": "string", "minLength": 1 }
+                  }
+                }
+              },
+              "unit": { "type": ["string", "null"] }
+            }
+          },
+          "accessibility_summary": { "type": "string", "minLength": 1 },
+          "validation": { "type": "array", "items": { "type": "object" } }
+        }
+      }
+    },
+    "issues": { "type": "array", "items": { "type": "object" } },
+    "next_node": { "enum": ["synthesis", "charting", "data_validation", "local_insight"] }
+  },
+  "allOf": [{
+    "if": { "properties": { "status": { "const": "ready" } } },
+    "then": { "properties": { "next_node": { "const": "synthesis" } } },
+    "else": { "properties": { "issues": { "minItems": 1 }, "next_node": { "enum": ["charting", "data_validation", "local_insight"] } } }
+  }]
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "reusable-data-analysis/intake-result",
+  "title": "任务澄清结果",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status", "questions", "task_config", "missing_fields", "ambiguous_fields", "assumptions"],
+  "properties": {
+    "status": { "enum": ["ready", "need_clarification"] },
+    "questions": { "type": "array", "maxItems": 3, "items": { "type": "string", "minLength": 1 } },
+    "task_config": { "type": ["object", "null"] },
+    "missing_fields": { "type": "array", "items": { "type": "string" } },
+    "ambiguous_fields": { "type": "array", "items": { "type": "string" } },
+    "assumptions": { "type": "array", "items": { "type": "string" } }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "ready" } } },
+      "then": {
+        "properties": {
+          "questions": { "maxItems": 0 },
+          "missing_fields": { "maxItems": 0 },
+          "ambiguous_fields": { "maxItems": 0 },
+          "task_config": { "type": "object" }
+        }
+      },
+      "else": {
+        "properties": {
+          "questions": { "minItems": 1 },
+          "task_config": { "type": ["object", "null"] }
+        }
+      }
+    }
+  ]
+}

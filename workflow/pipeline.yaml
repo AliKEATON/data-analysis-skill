@@ -1,0 +1,117 @@
+version: 1
+name: reusable-data-analysis-pipeline
+description: 可复用数据分析工作流：从任务澄清到最终审查。
+
+nodes:
+  - id: intake
+    role: clarify_request
+    description: 澄清分析目标、数据源、时间范围、维度、指标、过滤条件和输出要求。
+    prompt: prompts/intake.md
+    output_schema: schemas/intake-result.schema.json
+    input: user_request
+    output: task_config_or_questions
+    gate: task_config_valid
+    on_success: planning
+    on_failure: [ask_user]
+
+  - id: planning
+    role: build_analysis_plan
+    description: 根据任务配置和领域配置制定数据集、计算、校验和报告计划。
+    prompt: prompts/planner.md
+    output_schema: schemas/analysis-plan.schema.json
+    input: task_config_and_domain_profile
+    output: analysis_plan
+    gate: plan_contract_valid
+    on_success: preparation
+    on_failure: [intake]
+
+  - id: preparation
+    role: prepare_data
+    description: 读取数据、完成字段映射、清洗和基础数据准备。
+    prompt: prompts/preparation.md
+    output_schema: schemas/prepared-data.schema.json
+    input: data_source_and_analysis_plan
+    output: prepared_data
+    gate: preparation_contract_valid
+    on_success: extraction
+    on_failure: [intake]
+
+  - id: extraction
+    role: calculate_metrics
+    description: 按分析计划计算指标并生成结构化数据集。
+    prompt: prompts/extractor.md
+    output_schema: schemas/datasets.schema.json
+    input: prepared_data_and_analysis_plan
+    output: datasets
+    gate: datasets_contract_valid
+    on_success: data_validation
+    on_failure: [preparation]
+
+  - id: data_validation
+    role: validate_data
+    description: 校验字段、时间范围、单位、口径、汇总关系和数据完整性。
+    prompt: prompts/validator.md
+    output_schema: schemas/validation-report.schema.json
+    input: datasets_and_task_config
+    output: validation_report
+    gate: validation_passed
+    on_success: local_insight
+    on_failure: [preparation, extraction]
+
+  - id: local_insight
+    role: write_local_insights
+    description: 为单个数据集生成有数字依据的局部事实解读。
+    prompt: prompts/local-insight.md
+    output_schema: schemas/local-insights.schema.json
+    input: validated_datasets
+    output: local_insights
+    gate: local_insights_contract_valid
+    on_success: charting
+    on_failure: [data_validation]
+
+  - id: charting
+    role: create_charts
+    description: 根据数据类型和局部解读生成图表配置，并检查图表语义。
+    prompt: prompts/chart.md
+    output_schema: schemas/charts.schema.json
+    input: validated_datasets_and_local_insights
+    output: charts
+    gate: charts_contract_valid
+    on_success: synthesis
+    on_failure: [charting, data_validation, local_insight]
+
+  - id: synthesis
+    role: synthesize_global_insights
+    description: 跨数据集整合局部结果，生成全局洞察和图表取舍说明。
+    prompt: prompts/global-insight.md
+    output_schema: schemas/synthesis.schema.json
+    input: validated_datasets_charts_and_local_insights
+    output: global_insights_and_design_decisions
+    gate: synthesis_contract_valid
+    on_success: reporting
+    on_failure: [local_insight, data_validation]
+
+  - id: reporting
+    role: assemble_report
+    description: 组装图表、KPI、全局洞察和口径说明，生成目标报告。
+    prompt: prompts/report.md
+    output_schema: schemas/report.schema.json
+    input: charts_and_synthesis
+    output: report
+    gate: report_contract_valid
+    on_success: final_review
+    on_failure: [charting, synthesis]
+
+  - id: final_review
+    role: final_audit
+    description: 对数据、图表、结论、假设和输出格式执行最终审查。
+    prompt: prompts/final-review.md
+    output_schema: schemas/final-package.schema.json
+    input: all_artifacts_and_task_config
+    output: final_package
+    gate: final_review_passed
+    on_success: complete
+    on_failure: [reporting, charting, synthesis, local_insight, data_validation, extraction, preparation, intake]
+
+entrypoint: intake
+terminal: complete

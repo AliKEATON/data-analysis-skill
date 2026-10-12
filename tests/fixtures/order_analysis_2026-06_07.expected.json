@@ -1,0 +1,70 @@
+{
+  "case_id": "order-analysis-2026-06_07",
+  "basis": {
+    "sales_field": "amt",
+    "sales_unit": "CNY",
+    "profit_field": "calc_final_profit",
+    "profit_definition": "计价利润",
+    "excluded_primary_profit_field": "final_profit"
+  },
+  "source": {
+    "sha256": "951ed6c7047b2765cf5d474b475021212ab6a0d352c7952a687c2c7bbf9b6795",
+    "row_count": 696885
+  },
+  "overall": {
+    "scope_rows": 696885,
+    "order_count": 665732,
+    "amt_rmb": "21449100.20",
+    "calc_final_profit": "3759782.75",
+    "calc_profit_margin": 0.17528860021829729,
+    "negative_calc_profit_lines": 76323
+  },
+  "anomalies": {
+    "row_count": 76330,
+    "negative_profit_rows": 76323,
+    "zero_amt_rows": 35,
+    "blank_order_rows": 0,
+    "labels": {
+      "负计价利润": 76323,
+      "需复核": 7
+    }
+  },
+  "monthly": {
+    "2026-06": {
+      "amt_rmb": "11054624.48",
+      "calc_final_profit": "1768013.20",
+      "order_count": 367203,
+      "negative_calc_profit_lines": 45227
+    },
+    "2026-07": {
+      "amt_rmb": "10394475.72",
+      "calc_final_profit": "1991769.55",
+      "order_count": 298529,
+      "negative_calc_profit_lines": 31096
+    }
+  },
+  "monthly_department_order_count": {
+    "2026-06": {
+      "AL阿里业务部 / AL一部": 180772,
+      "全托业务部 / 全托一部": 120035,
+      "欧美海外仓 / <空>": 436,
+      "欧美海外仓 / EA1丨家居&美容": 2848,
+      "欧美海外仓 / EA2丨美容&厨餐": 34,
+      "欧美海外仓 / EA3丨厨餐&户外": 24720,
+      "欧美海外仓 / EA5丨澳英全品类": 21419,
+      "欧美海外仓 / EA四部(长沙)": 6325,
+      "欧美海外仓 / 欧美1组": 10614
+    },
+    "2026-07": {
+      "AL阿里业务部 / AL一部": 146487,
+      "全托业务部 / 全托一部": 83737,
+      "欧美海外仓 / <空>": 398,
+      "欧美海外仓 / EA1丨家居&美容": 2526,
+      "欧美海外仓 / EA2丨美容&厨餐": 26,
+      "欧美海外仓 / EA3丨厨餐&户外": 25252,
+      "欧美海外仓 / EA5丨澳英全品类": 20342,
+      "欧美海外仓 / EA四部(长沙)": 8196,
+      "欧美海外仓 / 欧美1组": 11565
+    }
+  }
+}

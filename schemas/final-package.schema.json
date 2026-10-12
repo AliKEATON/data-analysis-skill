@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "reusable-data-analysis/final-package",
+  "title": "最终审查与交付包",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["passed", "issues", "deliverables", "assumptions", "limitations", "next_node"],
+  "properties": {
+    "passed": { "type": "boolean" },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["severity", "artifact", "problem", "evidence", "fix", "recovery_node"],
+        "properties": {
+          "severity": { "enum": ["blocking", "warning", "info"] },
+          "artifact": { "type": "string" },
+          "problem": { "type": "string", "minLength": 1 },
+          "evidence": { "type": "string", "minLength": 1 },
+          "fix": { "type": "string", "minLength": 1 },
+          "recovery_node": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "deliverables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "path"],
+        "properties": {
+          "type": { "enum": ["report", "dataset", "chart", "validation", "other"] },
+          "path": { "type": "string", "minLength": 1 },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "assumptions": { "type": "array", "items": { "type": "string" } },
+    "limitations": { "type": "array", "items": { "type": "string" } },
+    "next_node": { "enum": ["complete", "reporting", "charting", "synthesis", "local_insight", "data_validation", "extraction", "preparation", "intake"] }
+  },
+  "allOf": [{
+    "if": { "properties": { "passed": { "const": true } } },
+    "then": { "properties": { "deliverables": { "minItems": 1 }, "next_node": { "const": "complete" } } },
+    "else": { "properties": { "issues": { "contains": { "type": "object", "properties": { "severity": { "const": "blocking" } }, "required": ["severity"] } }, "next_node": { "not": { "const": "complete" } } } }
+  }]
+}

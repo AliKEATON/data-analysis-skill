@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "reusable-data-analysis/run-manifest",
+  "title": "端到端运行清单",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["task_config", "artifacts"],
+  "properties": {
+    "task_config": { "type": "string", "minLength": 1 },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["intake", "planning", "preparation", "extraction", "data_validation", "local_insight", "charting", "synthesis", "reporting", "final_review"],
+      "properties": {
+        "intake": { "type": "string", "minLength": 1 },
+        "planning": { "type": "string", "minLength": 1 },
+        "preparation": { "type": "string", "minLength": 1 },
+        "extraction": { "type": "string", "minLength": 1 },
+        "data_validation": { "type": "string", "minLength": 1 },
+        "local_insight": { "type": "string", "minLength": 1 },
+        "charting": { "type": "string", "minLength": 1 },
+        "synthesis": { "type": "string", "minLength": 1 },
+        "reporting": { "type": "string", "minLength": 1 },
+        "final_review": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

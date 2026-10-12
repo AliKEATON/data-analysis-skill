@@ -1,0 +1,84 @@
+version: 1
+
+# 这些是通用默认规则，不包含具体行业或业务的指标。
+validation:
+  # 是否要求分析师明确说明业务口径。
+  require_explicit_business_definitions: true
+  # 只允许对展示和格式化使用默认值。
+  allow_assumptions_for_presentation_only: true
+  # 汇总勾稽关系允许的相对误差。
+  reconciliation_tolerance: 0.01
+  # 缺少应有时间段时是否阻断流程。
+  fail_on_missing_required_periods: true
+  fail_on_unmapped_metric: true
+
+formatting:
+  language: zh-CN
+  currency_decimals: 0
+  percentage_decimals: 2
+  percentage_as_number: true
+
+charts:
+  # 单个报告章节最多展示的图表数量。
+  max_per_section: 4
+  # 正文每屏最多并排的图表列数（HTML 渲染器按此把章节按行分组）。
+  max_columns_per_screen: 2
+  time_series_type: line
+  small_category_type: vertical_bar
+  large_category_type: horizontal_bar
+  category_threshold: 5
+  max_point_labels: 3
+  # 配色规范（禁止使用调色板以外的颜色）。
+  palette:
+    primary_dark: "#003366"
+    primary_mid: "#0073CF"
+    primary_light: "#5AB4E0"
+    negative: "#E63329"
+    average: "#F7941D"
+    positive: "#00A551"
+  # 坐标轴规范。
+  axis:
+    bar_from_zero: true          # 柱状图 Y 轴从 0 开始。
+    line_allow_compressed: true  # 折线图允许压缩，但必须标注「非零起点」。
+    compressed_note: "非零起点"
+    max_scale_factor: 1.2        # Y 轴最大值 = 数据最大值 × 1.2，留标注空间。
+    require_explicit_dual_axis: true  # 双 Y 轴右轴 min/max 必须显式设置，禁止自动缩放。
+  # 数据标注规范。
+  labels:
+    max_count: 3                 # 最多标注最新值、峰值、对比基准 3 个关键点。
+    font_weight: bold
+    font_size: 12
+    close_when_points_over: 20   # 数据点超过 20 时关闭逐点标注。
+  # 辅助线规范。
+  aux_lines:
+    average: { color: "#F7941D", style: dashed, label_prefix: "均值" }
+    target: { color: "#E63329", style: dotted, label_prefix: "目标" }
+
+# 报告布局与撰写规范。
+report:
+  kpi_count: 5                     # 每个 Tab 顶部 KPI 卡片数量。
+  max_charts_per_tab: 4            # 每个 Tab 最多图表数量，超出则剔除。
+  chart_columns: "6:4"             # 每屏最多两列的列比例（6:4 或 5:5）；渲染器据此生成 grid-template-columns，5:5 即等分。
+  chart_removal:
+    min_difference: 0.05           # 组间差异 < 5% 视为无有效信息，剔除。
+  chart_height:                    # 图区高度基准（px）：按行取该行各图基准的较大值作为行内图高，只保证同行等高，不做全局拉平。
+    dual_axis: 320
+    dual_axis_min: 280
+    line_dense_points: 48
+    line_dense: 300
+    line_base: 260
+    line_min: 260
+    hbar_row: 40
+    hbar_row_threshold: 7
+  notes:                           # 备注字体规范。
+    source: { font_size: 11, color: "#888" }        # 图表来源，标题下方。
+    methodology: { font_size: 11, color: "#666" }   # 口径说明，Tab 底部。
+    chart_conclusion: { font_size: 12, color: "#444", accent: "#003366" }  # 图表结论卡片，蓝色左边框。
+
+insights:
+  # 局部洞察和全局洞察的最大字符数。
+  local_max_length: 30
+  global_max_length: 60
+  require_numeric_evidence: true
+  prohibit_vague_words: true
+  require_business_implication_for_global: true

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "reusable-data-analysis/prepared-data",
+  "title": "数据准备结果",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status", "prepared_data_ref", "source_summary", "field_lineage", "transformations", "data_profile", "issues", "assumptions", "next_node"],
+  "properties": {
+    "status": { "enum": ["ready", "blocked"] },
+    "prepared_data_ref": { "type": "string" },
+    "source_summary": { "type": "object" },
+    "field_lineage": { "type": "array", "items": { "type": "object" } },
+    "transformations": { "type": "array", "items": { "type": "object" } },
+    "data_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["row_count", "columns", "date_min", "date_max", "null_summary"],
+      "properties": {
+        "row_count": { "type": "integer", "minimum": 0 },
+        "columns": { "type": "array", "items": { "type": "string" } },
+        "date_min": { "type": ["string", "null"] },
+        "date_max": { "type": ["string", "null"] },
+        "null_summary": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } }
+      }
+    },
+    "issues": { "type": "array", "items": { "type": "object" } },
+    "assumptions": { "type": "array", "items": { "type": "string" } },
+    "next_node": { "enum": ["extraction", "intake"] }
+  },
+  "allOf": [{
+    "if": { "properties": { "status": { "const": "ready" } } },
+    "then": { "properties": { "prepared_data_ref": { "minLength": 1 }, "field_lineage": { "minItems": 1 }, "data_profile": { "properties": { "columns": { "minItems": 1 } } }, "next_node": { "const": "extraction" } } },
+    "else": { "properties": { "issues": { "minItems": 1 }, "next_node": { "const": "intake" } } }
+  }]
+}

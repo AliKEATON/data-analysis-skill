@@ -1,0 +1,36 @@
+version: 1
+domain: generic
+display_name: 通用数据分析
+
+scope:
+  description: 在没有适用领域配置时提供最小通用规则，不预设业务指标或分析维度。
+  limitations:
+    - 不提供行业专属指标定义。
+    - 不替代分析师确认业务口径。
+
+required_clarifications:
+  - analysis_goal
+  - data_source
+  - time_range
+  - dimensions
+  - metrics
+
+recommended_questions:
+  - 本次分析需要支持什么业务判断或决策？
+  - 核心指标的计算口径、单位和数据字段分别是什么？
+  - 需要在哪些维度上比较或归因？
+  - 应与哪个期间、目标值或基准对象比较？
+
+analysis_principles:
+  - 先确认指标定义，再计算指标。
+  - 先验证数据，再生成图表和结论。
+  - 局部洞察描述单个数据集中的事实，全局洞察负责跨维度解释。
+  - 推荐分析只能作为建议，未经分析师确认不得自动加入任务范围。
+
+quality_checks:
+  - 字段存在性
+  - 时间范围完整性
+  - 单位和数据类型一致性
+  - 聚合结果可复算性
+  - 分母为零和缺失值处理
+  - 结论与数据一致性

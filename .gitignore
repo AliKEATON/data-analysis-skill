@@ -1,0 +1,50 @@
+# ============================================================
+# 本仓库只保存 Skill 本体（契约 / 提示词 / 运行时 / 脚本 / 配置 / 测试）。
+# 资料文件与运行产物一律不入库：克隆后按 README 与各案例说明自行准备数据。
+# ============================================================
+
+# ---- 资料文件（原始数据、中间数据，体积大且非本体）----
+temp/
+# 案例自带的数据副本（task.json / hooks / prepare_*.py 保留，数据本身不入库）
+cases/*/source/
+# 数据文件类型兜底；若确需随 Skill 分发极小样例，可用 ! 规则显式放行
+*.xlsx
+*.xls
+*.csv
+*.tsv
+*.parquet
+*.feather
+*.jsonl
+*.sqlite
+*.sqlite3
+*.db
+
+# ---- 运行产物 ----
+outputs/
+.trae-html-share-packages/
+
+# ---- Python 缓存 ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ---- 虚拟环境 ----
+.venv/
+venv/
+env/
+
+# ---- 编辑器 / 操作系统 ----
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- 日志与临时文件 ----
+*.log
+*.tmp

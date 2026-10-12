@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "reusable-data-analysis/task-config",
+  "title": "数据分析任务配置",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["analysis_goal", "data_source", "time_range", "dimensions", "metrics", "output"],
+  "properties": {
+    "analysis_goal": {
+      "type": "string",
+      "minLength": 1,
+      "description": "本次分析需要支持的业务问题或决策。"
+    },
+    "data_source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "location"],
+      "properties": {
+        "type": { "const": "file", "description": "当前运行时仅支持本地文件。" },
+        "location": { "type": "string", "minLength": 1, "pattern": "\\.([cC][sS][vV]|[xX][lL][sS][xX]?|[pP][aA][rR][qQ][uU][eE][tT])$", "description": "CSV、Excel 或 Parquet 本地文件路径。" },
+        "sheet": { "type": ["string", "null"], "minLength": 1, "description": "Excel 工作表名称；CSV/Parquet 必须省略或为 null。" },
+        "field_mapping": { "type": "object", "additionalProperties": { "type": "string" } },
+        "date_field": { "type": "string", "minLength": 1, "description": "日期字段的逻辑列名（来自 field_mapping 的 key），用于时间范围过滤和派生 analysis_month。默认回退为 'opration_date'。" },
+        "derived_dimensions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "type", "sources"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1, "description": "派生维度列的输出逻辑列名。" },
+              "type": { "type": "string", "enum": ["concat", "copy"], "description": "派生方式：concat 为多字段拼接，copy 为单字段复制重命名。" },
+              "sources": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "description": "来源逻辑列名列表；copy 只取第一个，concat 按顺序拼接。" },
+              "separator": { "type": "string", "description": "concat 时的拼接分隔符；默认 ' / '。空值统一替换为 '<空>'。" }
+            }
+          },
+          "description": "派生逻辑维度配置：用于在读取后从已有逻辑列生成新的分析维度，例如从 group_first+group_second 合成 department。"
+        }
+      },
+      "allOf": [{
+        "if": { "properties": { "location": { "pattern": "\\.([cC][sS][vV]|[pP][aA][rR][qQ][uU][eE][tT])$" } }, "required": ["location"] },
+        "then": { "properties": { "sheet": { "type": "null" } } }
+      }]
+    },
+    "time_range": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start", "end", "granularity"],
+      "properties": {
+        "start": { "type": "string", "minLength": 1, "pattern": "^\\d{4}(-\\d{2}){0,2}$", "description": "分析起始时间，格式为 YYYY、YYYY-MM 或 YYYY-MM-DD。" },
+        "end": { "type": "string", "minLength": 1, "pattern": "^\\d{4}(-\\d{2}){0,2}$", "description": "分析结束时间，格式为 YYYY、YYYY-MM 或 YYYY-MM-DD。" },
+        "granularity": { "type": "string", "enum": ["day", "month", "year"], "description": "当前运行时支持的时间粒度。" }
+      }
+    },
+    "dimensions": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "metrics": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "definition"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "description": "指标名称。" },
+          "role": { "type": "string", "enum": ["sales", "profit", "order_count", "margin", "quantity", "refund", "other"], "description": "指标在分析运行时中的业务角色。" },
+          "label": { "type": "string", "minLength": 1, "description": "报告中的指标显示名称；未提供时由定义或名称推导。" },
+          "definition": { "type": "string", "minLength": 1, "description": "指标计算口径或公式。" },
+          "unit": { "type": ["string", "null"], "description": "指标单位；不适用时为 null。" },
+          "source_field": { "type": "string", "minLength": 1, "description": "基础指标使用的逻辑源字段。" },
+          "aggregation": { "type": "string", "enum": ["sum", "count_distinct", "avg", "max", "min", "count"], "description": "基础指标聚合方式枚举；当前运行时实际实现 sum 与 count_distinct，其余值预留扩展。" },
+          "formula": { "type": "string", "minLength": 1, "description": "派生指标公式，引用其他指标名称。" },
+          "zero_denominator": { "type": "string", "enum": ["null", "zero", "error"], "description": "派生除法指标分母为零时的处理方式。" }
+        }
+      }
+    },
+    "filters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["field", "operator", "value"],
+        "properties": {
+          "field": { "type": "string", "minLength": 1, "description": "过滤字段。" },
+          "operator": { "type": "string", "enum": ["=", "!=", "in", "not_in", ">", ">=", "<", "<=", "between"], "description": "过滤运算符。" },
+          "value": {}
+        }
+      }
+    },
+    "anomaly_rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "label", "field", "operator"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "label": { "type": "string", "minLength": 1 },
+          "field": { "type": "string", "minLength": 1, "description": "字段映射后的逻辑字段。" },
+          "operator": { "type": "string", "enum": ["eq", "ne", "lt", "le", "gt", "ge", "blank", "not_blank"] },
+          "value": { "type": ["number", "string", "boolean", "null"] }
+        }
+      }
+    },
+    "comparison": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "type": "string", "enum": ["none", "period_over_period", "year_over_year", "target", "benchmark"], "description": "对比方式。" },
+        "baseline": { "type": ["string", "array", "null"], "description": "对比基准期间或基准对象。" },
+        "target": { "type": ["number", "string", "null"], "description": "目标值；不适用时为 null。" }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format"],
+      "properties": {
+        "format": { "type": "string", "enum": ["json", "html", "markdown", "xlsx"], "description": "输出格式。" },
+        "title": { "type": "string", "minLength": 1, "description": "报告标题；未提供时由分析目标推导。" },
+        "subtitle": { "type": "string", "minLength": 1, "description": "报告副标题或报告类型说明。" },
+        "audience": { "type": ["string", "null"], "description": "报告使用对象；不适用时为 null。" },
+        "language": { "type": "string", "default": "zh-CN", "description": "输出语言。" },
+        "include_charts": { "type": "boolean", "default": true, "description": "是否包含图表。" },
+        "primary_entity_label": { "type": "string", "minLength": 1, "description": "报告中主逻辑维度的实体显示名称；若未提供则运行时由 primary_dimension 或 dimensions 推断（默认 '部门'）。" },
+        "primary_dimension": { "type": "string", "minLength": 1, "description": "主逻辑维度列名；若未提供则取 derived_dimensions 第一个 concat 输出列或 dimensions 第一个。" },
+        "dimension_labels": { "type": "object", "additionalProperties": { "type": "string", "minLength": 1 }, "description": "维度显示名映射（维度列名 → 报告中的中文显示名），用于图表标题与 KPI 标签。" }
+      }
+    },
+    "domain": { "type": ["string", "null"] },
+    "assumptions": { "type": "array", "items": { "type": "string" } }
+  }
+}

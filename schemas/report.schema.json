@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "reusable-data-analysis/report",
+  "title": "分析报告",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status", "report", "design_decisions", "issues", "next_node"],
+  "properties": {
+    "status": { "enum": ["ready", "blocked"] },
+    "report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "artifact_ref", "title", "sections", "data_period", "methodology", "assumptions"],
+      "properties": {
+        "format": { "enum": ["json", "html", "markdown", "xlsx"] },
+        "artifact_ref": { "type": "string" },
+        "title": { "type": "string", "minLength": 1 },
+        "sections": { "type": "array", "items": { "type": "object" } },
+        "data_period": { "type": "string", "minLength": 1 },
+        "methodology": { "type": "array", "items": { "type": "string" } },
+        "assumptions": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "design_decisions": { "type": "array", "items": { "type": "object" } },
+    "issues": { "type": "array", "items": { "type": "object" } },
+    "next_node": { "enum": ["final_review", "charting", "synthesis"] }
+  },
+  "allOf": [{
+    "if": { "properties": { "status": { "const": "ready" } } },
+    "then": { "properties": { "report": { "properties": { "artifact_ref": { "minLength": 1 }, "sections": { "minItems": 1 } } }, "next_node": { "const": "final_review" } } },
+    "else": { "properties": { "issues": { "minItems": 1 }, "next_node": { "enum": ["charting", "synthesis"] } } }
+  }]
+}

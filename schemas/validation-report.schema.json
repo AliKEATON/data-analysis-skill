@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "reusable-data-analysis/validation-report",
+  "title": "数据校验报告",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["passed", "checks", "issues", "validated_dataset_ids", "next_node"],
+  "properties": {
+    "passed": { "type": "boolean" },
+    "checks": { "type": "array", "items": { "type": "object" } },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["severity", "dataset_id", "check", "evidence", "fix", "recovery_node"],
+        "properties": {
+          "severity": { "enum": ["blocking", "warning", "info"] },
+          "dataset_id": { "type": "string" },
+          "check": { "type": "string", "minLength": 1 },
+          "evidence": { "type": "string", "minLength": 1 },
+          "fix": { "type": "string", "minLength": 1 },
+          "recovery_node": { "enum": ["preparation", "extraction"] }
+        }
+      }
+    },
+    "validated_dataset_ids": { "type": "array", "items": { "type": "string" } },
+    "next_node": { "enum": ["local_insight", "preparation", "extraction"] }
+  },
+  "allOf": [{
+    "if": { "properties": { "passed": { "const": true } } },
+    "then": { "properties": { "validated_dataset_ids": { "minItems": 1 }, "next_node": { "const": "local_insight" } } },
+    "else": { "properties": { "issues": { "contains": { "type": "object", "properties": { "severity": { "const": "blocking" } }, "required": ["severity"] } }, "next_node": { "enum": ["preparation", "extraction"] } } }
+  }]
+}

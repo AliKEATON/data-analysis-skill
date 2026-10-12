@@ -1,0 +1,304 @@
+{
+  "analysis_goal": "分析 2026 年 1-6 月电商订单经营情况：销售额与计价利润的月度走势、部门（业务部）利润结构、成本费用构成与平台罚款的趋势，定位主要利润贡献与风险来源。",
+  "data_source": {
+    "type": "file",
+    "location": "source/orders_typed.parquet",
+    "sheet": null,
+    "date_field": "pay_time",
+    "field_mapping": {
+      "pay_time": "pay_time",
+      "order_number": "order_number",
+      "group_first": "group_first",
+      "group_second": "group_second",
+      "country_code": "country_code",
+      "order_type": "order_type",
+      "amt": "amt",
+      "calc_final_profit": "calc_final_profit",
+      "quantity": "quantity",
+      "real_refund": "real_refund",
+      "product_cost": "product_cost",
+      "expense_freight": "expense_freight",
+      "ship_freight": "ship_freight",
+      "storage_fee": "storage_fee",
+      "packaging_fee": "packaging_fee",
+      "transaction_fee": "transaction_fee",
+      "commission": "commission",
+      "tax_fee": "tax_fee",
+      "coupon": "coupon",
+      "exchange_loss": "exchange_loss",
+      "fine_amt": "fine_amt",
+      "advertising_fee": "advertising_fee",
+      "marketing_fee": "marketing_fee",
+      "other_expense": "other_expense"
+    },
+    "derived_dimensions": [
+      {
+        "name": "department",
+        "type": "concat",
+        "sources": ["group_first", "group_second"],
+        "separator": " / "
+      }
+    ]
+  },
+  "time_range": {
+    "start": "2026-01",
+    "end": "2026-06",
+    "granularity": "month"
+  },
+  "dimensions": ["group_first", "country_code", "order_type", "group_second"],
+  "metrics": [
+    {
+      "name": "amt",
+      "role": "sales",
+      "label": "销售额",
+      "definition": "订单明细销售额合计（人民币计价，按行求和）",
+      "unit": "CNY",
+      "source_field": "amt",
+      "aggregation": "sum"
+    },
+    {
+      "name": "calc_final_profit",
+      "role": "profit",
+      "label": "计价利润",
+      "definition": "校准成本口径利润再扣减退款后的利润（amt - 校准成本 - real_refund）",
+      "unit": "CNY",
+      "source_field": "calc_final_profit",
+      "aggregation": "sum"
+    },
+    {
+      "name": "order_count",
+      "role": "order_count",
+      "label": "订单数",
+      "definition": "按订单号去重的订单数",
+      "unit": "单",
+      "source_field": "order_number",
+      "aggregation": "count_distinct"
+    },
+    {
+      "name": "profit_margin",
+      "role": "margin",
+      "label": "利润率",
+      "definition": "计价利润 / 销售额",
+      "unit": null,
+      "formula": "calc_final_profit / amt",
+      "zero_denominator": "null"
+    },
+    {
+      "name": "qty",
+      "role": "quantity",
+      "label": "销量",
+      "definition": "明细数量合计",
+      "unit": "件",
+      "source_field": "quantity",
+      "aggregation": "sum"
+    },
+    {
+      "name": "refund_amount",
+      "role": "refund",
+      "label": "退款金额",
+      "definition": "退款金额合计（real_refund）",
+      "unit": "CNY",
+      "source_field": "real_refund",
+      "aggregation": "sum"
+    },
+    {
+      "name": "product_cost",
+      "role": "other",
+      "label": "产品成本",
+      "definition": "采购产品成本合计",
+      "unit": "CNY",
+      "source_field": "product_cost",
+      "aggregation": "sum"
+    },
+    {
+      "name": "expense_freight",
+      "role": "other",
+      "label": "尾程运费",
+      "definition": "尾程配送运费合计",
+      "unit": "CNY",
+      "source_field": "expense_freight",
+      "aggregation": "sum"
+    },
+    {
+      "name": "ship_freight",
+      "role": "other",
+      "label": "头程运费",
+      "definition": "头程头程/干线运费合计",
+      "unit": "CNY",
+      "source_field": "ship_freight",
+      "aggregation": "sum"
+    },
+    {
+      "name": "storage_fee",
+      "role": "other",
+      "label": "仓储费",
+      "definition": "仓储费用合计",
+      "unit": "CNY",
+      "source_field": "storage_fee",
+      "aggregation": "sum"
+    },
+    {
+      "name": "packaging_fee",
+      "role": "other",
+      "label": "包装费",
+      "definition": "包装材料费用合计",
+      "unit": "CNY",
+      "source_field": "packaging_fee",
+      "aggregation": "sum"
+    },
+    {
+      "name": "transaction_fee",
+      "role": "other",
+      "label": "交易手续费",
+      "definition": "平台交易手续费合计",
+      "unit": "CNY",
+      "source_field": "transaction_fee",
+      "aggregation": "sum"
+    },
+    {
+      "name": "commission",
+      "role": "other",
+      "label": "佣金",
+      "definition": "渠道佣金合计",
+      "unit": "CNY",
+      "source_field": "commission",
+      "aggregation": "sum"
+    },
+    {
+      "name": "tax_fee",
+      "role": "other",
+      "label": "税费",
+      "definition": "税费合计",
+      "unit": "CNY",
+      "source_field": "tax_fee",
+      "aggregation": "sum"
+    },
+    {
+      "name": "coupon",
+      "role": "other",
+      "label": "优惠券",
+      "definition": "平台优惠券让利合计",
+      "unit": "CNY",
+      "source_field": "coupon",
+      "aggregation": "sum"
+    },
+    {
+      "name": "exchange_loss",
+      "role": "other",
+      "label": "汇兑损失",
+      "definition": "汇兑损失合计",
+      "unit": "CNY",
+      "source_field": "exchange_loss",
+      "aggregation": "sum"
+    },
+    {
+      "name": "fine_amt",
+      "role": "other",
+      "label": "平台罚款",
+      "definition": "平台罚款/违约金合计",
+      "unit": "CNY",
+      "source_field": "fine_amt",
+      "aggregation": "sum"
+    },
+    {
+      "name": "advertising_fee",
+      "role": "other",
+      "label": "广告费",
+      "definition": "广告投放费用合计",
+      "unit": "CNY",
+      "source_field": "advertising_fee",
+      "aggregation": "sum"
+    },
+    {
+      "name": "marketing_fee",
+      "role": "other",
+      "label": "营销费",
+      "definition": "营销推广费用合计",
+      "unit": "CNY",
+      "source_field": "marketing_fee",
+      "aggregation": "sum"
+    },
+    {
+      "name": "other_expense",
+      "role": "other",
+      "label": "其他费用",
+      "definition": "其他经营费用合计",
+      "unit": "CNY",
+      "source_field": "other_expense",
+      "aggregation": "sum"
+    },
+    {
+      "name": "cost_total",
+      "role": "other",
+      "label": "成本费用合计",
+      "definition": "已映射的 14 项成本费用之和（产品成本+尾程运费+头程运费+仓储费+包装费+交易手续费+佣金+税费+优惠券+汇兑损失+平台罚款+广告费+营销费+其他费用）",
+      "unit": "CNY",
+      "formula": "product_cost + expense_freight + ship_freight + storage_fee + packaging_fee + transaction_fee + commission + tax_fee + coupon + exchange_loss + fine_amt + advertising_fee + marketing_fee + other_expense",
+      "zero_denominator": "null"
+    },
+    {
+      "name": "cost_rate",
+      "role": "other",
+      "label": "成本费用率",
+      "definition": "成本费用合计 / 销售额",
+      "unit": null,
+      "formula": "cost_total / amt",
+      "zero_denominator": "null"
+    }
+  ],
+  "filters": [],
+  "anomaly_rules": [
+    {
+      "name": "invalid_sales",
+      "label": "销售额非正",
+      "field": "amt",
+      "operator": "le",
+      "value": 0
+    },
+    {
+      "name": "missing_order_number",
+      "label": "订单号缺失",
+      "field": "order_number",
+      "operator": "blank"
+    }
+  ],
+  "comparison": {
+    "type": "period_over_period",
+    "baseline": "2026-01",
+    "target": "2026-06"
+  },
+  "output": {
+    "format": "html",
+    "title": "电商订单经营分析（2026 年 1-6 月）",
+    "subtitle": "订单经营 · 费用与利润专项",
+    "audience": "电商经营管理层与各业务部负责人",
+    "language": "zh-CN",
+    "include_charts": true,
+    "primary_dimension": "group_first",
+    "primary_entity_label": "部门",
+    "dimension_labels": {
+      "analysis_month": "月度",
+      "group_first": "部门",
+      "group_second": "细分组织",
+      "department": "部门（细分）",
+      "country_code": "国家/地区",
+      "order_type": "订单类型"
+    }
+  },
+  "domain": "generic",
+  "assumptions": [
+    "源数据为 data-analysis-skill/temp/电商订单明细数据.xlsx（用户给出的项目根 temp/ 路径在本机不存在，实际文件位于 Skill 的 temp 目录）；因 Skill 读取层对 xlsx 分块时数值列 dtype 会在 int64 与 float64 之间抖动，触发 pyarrow 写入 schema 冲突而中断全量读取，本案例用 cases/ecom-orders-2026h1/prepare_typed_source.py 把源表无损转换为等值 Parquet（仅统一数值列为 float64、文本列为 string，不修改任何数值，行数与金额已比对一致），并以该 Parquet 作为 data_source。",
+    "分析期间取 2026-01-01 至 2026-06-30，覆盖源文件全部自然月，无缺失月份，因此不触发缺失期间阻断。",
+    "日期口径采用下单支付时间 pay_time，而非操作日 opration_date：opration_date = pay_time + 1~4 天，会让 6 月末订单跨月落到 7 月，破坏“按月经营”口径。",
+    "销售额口径 = amt（订单明细销售额，人民币计价），按明细行求和；不做汇率换算。",
+    "利润口径 = calc_final_profit（计价利润：校准成本口径利润再扣减退款），即 amt − 校准成本 − 退款 real_refund；不使用 final_profit（该列口径未确认，按项目约定不参与主分析）。",
+    "订单数口径 = order_number 去重；同一订单的多行明细只计一单。",
+    "利润率 = 计价利润 / 销售额；销售额为 0 时置为空值（不可用）。",
+    "主维度 = group_first（3 个业务部）；并保留 group_second（细分组织）与派生维度 department（一级/二级拼接）用于组织下钻。",
+    "对比基准：归因贡献度按首末期 2026-01 → 2026-06 计算；报告顶部“环比”即首末期对比，洞察中另给出 2026-06 对 2026-05 的真实环比。",
+    "成本费用口径：成本费用合计 = 已映射的 14 项成本费用之和，其中产品成本使用 product_cost（采购成本），而计价利润使用校准成本 clac_product_cost，因此“成本费用合计”与“计价利润”不构成严格勾稽，差额为校准成本调整与退款。",
+    "异常值处理：异常清单只收录“销售额 ≤ 0”与“订单号缺失”两类数据质量问题；负利润明细（约占 21.8%）属经营信号而非数据异常，按维度输出 negative_profit_line_count / negative_profit_line_rate，不落盘为异常清单。",
+    "图表取整策略：同维度只保留一张图以避免结论重复，单页最多 4 张图；按规范禁用饼图；细分组织利润图与部门利润图结论重复，已在 synthesis 中标记剔除。",
+    "本数据为脱敏/重构后的演示数据（订单号、账户、店铺、销售员均为代理值），结论用于验证分析框架与经营结构，不代表真实平台的经营结果。"
+  ]
+}

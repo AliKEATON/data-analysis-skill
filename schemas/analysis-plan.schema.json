@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "reusable-data-analysis/analysis-plan",
+  "title": "分析计划",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status", "plan_id", "datasets", "execution_order", "chart_candidates", "report_sections", "blocking_issues", "assumptions", "next_node"],
+  "properties": {
+    "status": { "enum": ["ready", "blocked"] },
+    "plan_id": { "type": "string", "minLength": 1 },
+    "datasets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "purpose", "dimensions", "metrics", "filters", "comparison", "grain", "validations"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "purpose": { "type": "string", "minLength": 1 },
+          "dimensions": { "type": "array", "items": { "type": "string" } },
+          "metrics": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+          "filters": { "type": "array", "items": { "type": "object" } },
+          "comparison": { "type": ["object", "null"] },
+          "grain": { "type": "string", "minLength": 1 },
+          "validations": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+        }
+      }
+    },
+    "execution_order": { "type": "array", "items": { "type": "string" } },
+    "chart_candidates": { "type": "array", "items": { "type": "object" } },
+    "report_sections": { "type": "array", "items": { "type": "object" } },
+    "blocking_issues": { "type": "array", "items": { "type": "string" } },
+    "assumptions": { "type": "array", "items": { "type": "string" } },
+    "next_node": { "enum": ["preparation", "intake"] }
+  },
+  "allOf": [{
+    "if": { "properties": { "status": { "const": "ready" } } },
+    "then": { "properties": { "datasets": { "minItems": 1 }, "execution_order": { "minItems": 1 }, "blocking_issues": { "maxItems": 0 }, "next_node": { "const": "preparation" } } },
+    "else": { "properties": { "blocking_issues": { "minItems": 1 }, "next_node": { "const": "intake" } } }
+  }]
+}
